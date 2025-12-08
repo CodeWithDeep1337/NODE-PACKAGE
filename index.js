@@ -6,10 +6,10 @@ function secureRandomIndex(max) {
 }
 
 function generateOTP(options = {}) {
-  const {       // this all are default value
+  const {
     length = 6,
     type = "numeric",
-    expiresIn = 20, 
+    expiresIn = 20,
     humanFriendly = false,
   } = options;
 
@@ -29,34 +29,22 @@ function generateOTP(options = {}) {
     otp += charset[secureRandomIndex(charset.length)];
   }
 
-  const session = {
+  return {
     otp,
-    expired: false,
+    expiresAt: Date.now() + expiresIn * 1000,
   };
-
-  if (expiresIn > 0) {
-    setTimeout(() => {
-      session.expired = true;
-      console.log(`\nNow OTP ${session.otp} has expired!`);
-      process.exit(1);
-    }, expiresIn * 1000);
-  }
-
-  return session;
 }
 
 function verifyOTP(userOTP, session) {
-  if (session.expired) {
-    console.log(" OTP expired");
-    process.exit(1);
+  if (Date.now() > session.expiresAt) {
+    return { success: false, message: "OTP expired" };
+   
   }
 
   if (userOTP !== session.otp) {
-    console.log(" Incorrect OTP");
-    process.exit(1);
+    return { success: false, message: "Incorrect OTP" };
   }
 
-  session.expired = true;
   return { success: true, message: "OTP verified" };
 }
 
